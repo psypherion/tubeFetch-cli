@@ -9,9 +9,11 @@ class PlaylistGenerator:
         self.playlist_name = playlist_name
 
     def generate_playlist_links(self):
-        playlist_url = self.playlist_name
-        playlist = Playlist(playlist_url)
-        video_links = playlist.video_urls
+        if 'playlist' in self.playlist_name.lower():
+            playlist = Playlist(self.playlist_name)
+            video_links = playlist.video_urls
+        else:
+            video_links = [self.playlist_name]
 
         with open('links.txt', 'w') as file:
             for link in video_links:
@@ -38,7 +40,7 @@ class VideoDownloader:
             os.makedirs(self.output_directory)
         
         with open(os.path.join(self.output_directory, "video_details.txt"), "a", encoding="utf-8") as video_details_file:
-            video_details_file.write(f"Downloading videos from playlist: {self.playlist_name}\nDate: {today_date}\nTime: {current_time}\n\n")
+            video_details_file.write(f"Downloading videos from playlist/video: {self.playlist_name}\n\nDate: {today_date}\nTime: {current_time}\n\n")
             for i, video_url in enumerate(video_urls):
                 try:
                     start_time = time.time()
@@ -62,9 +64,7 @@ class VideoDownloader:
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info_dict = ydl.extract_info(video_url, download=True)
                         video_title = info_dict.get('title', 'video')
-                        sanitized_title = self.sanitize_filename(video_title)
-                        audio_file_path = ydl.prepare_filename(info_dict)
-                        video_details_file.write(f"{i}. {video_title} : {video_url}\n\n")
+                        video_details_file.write(f"{i+1}. {video_title} : {video_url}\n\n")
 
                         if not os.path.exists(self.output_directory):
                             os.makedirs(self.output_directory)
@@ -83,17 +83,17 @@ class VideoDownloader:
 
 if __name__ == "__main__":
     banner = '''
-    
- _   _ _     _             ______                    _                 _           
-| | | (_)   | |            |  _  \                  | |               | |          
-| | | |_  __| | ___  ___   | | | |_____      ___ __ | | ___   __ _  __| | ___ _ __ 
-| | | | |/ _` |/ _ \/ _ \  | | | / _ \ \ /\ / / '_ \| |/ _ \ / _` |/ _` |/ _ \ '__|
-\ \_/ / | (_| |  __/ (_) | | |/ / (_) \ V  V /| | | | | (_) | (_| | (_| |  __/ |   
- \___/|_|\__,_|\___|\___/  |___/ \___/ \_/\_/ |_| |_|_|\___/ \__,_|\__,_|\___|_|   
-                                                                                   
-                                                                                   
+
+ _______  __   __  _______  _______         _______  _______  _______  _______  __   __ 
+|       ||  | |  ||  _    ||       |       |       ||       ||       ||       ||  | |  |
+|_     _||  | |  || |_|   ||    ___| ____  |    ___||    ___||_     _||       ||  |_|  |
+  |   |  |  |_|  ||       ||   |___ |____| |   |___ |   |___   |   |  |       ||       |
+  |   |  |       ||  _   | |    ___|       |    ___||    ___|  |   |  |      _||       |
+  |   |  |       || |_|   ||   |___        |   |    |   |___   |   |  |     |_ |   _   |
+  |___|  |_______||_______||_______|       |___|    |_______|  |___|  |_______||__| |__|
 
     '''
+    print(banner)
     playlist_name = input("Enter the YouTube playlist URL: ")
     
     playlist_generator = PlaylistGenerator(playlist_name)
